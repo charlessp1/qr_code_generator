@@ -7,8 +7,49 @@ from tkinter import filedialog, colorchooser, messagebox
 class GUIQR(QRGenerator):
     super().__init__()
 
-    def generate_qr(self, data):
-        data = entry.get()
+    root = tk.Tk()
+    root.title("QR Code Generator")
+
+    tk.Label(root, text="Enter text or URL:").pack(pady=5)
+    entry = tk.Entry(root, width=40)
+    entry.pack(pady=5)
+
+    fill_color = tk.StringVar(value="black")
+    back_color = tk.StringVar(value="white")
+    logo_path = tk.StringVar(value="")
+
+    tk.Button(root, text="Pick Fill Color", command=lambda: choose_color(fill_color)).pack(pady=2)
+    tk.Button(root, text="Pick Background Color", command=lambda: choose_color(back_color)).pack(pady=2)
+    tk.Button(root, text="Choose Logo (optional)", command=choose_logo).pack(pady=2)
+
+    tk.Button(root, text="Generate QR Code", command=generate_qr, bg="green", fg="white").pack(pady=10)
+
+    def gui_qr_generator(self, data):
+        data = self.entry.get()
         if not data:
             messagebox.showerror("Input required!", "Please enter a text or URL.")
             return
+
+        self._fill_color = self.fill_color.get()
+        self._back_color = self.back_color.get()
+
+        qr_img = super().generate_qr(data).convert("RGB")
+
+        if self.logo_path.get():
+            try:
+                logo = Image.open(self.logo_path.get())
+                qr_w, qr_h = qr_img.size
+
+                logo_size = int(qr_w / 4)
+                logo = logo.resize(logo_size, logo_size)
+                pos = ((qr_w - logo_size) // 2, (qr_h - logo_size) // 2)
+
+                qr_img.paste(logo, pos, mask=logo if logo.mode=='RGBA' else None)
+            except Exception as e:
+                messagebox.showerror("Logo error!", f"Failed to add logo: {e}")
+
+        filename = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG", "*.png")])
+
+        if filename:
+            super().save_img(filename, qr_img)
+            messagebox.showinfo("Success!", f"QR Code saved successfully as {filename}")
