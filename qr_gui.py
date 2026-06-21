@@ -53,3 +53,13 @@ class GUIQR(QRGenerator):
         if filename:
             super().save_img(filename, qr_img)
             messagebox.showinfo("Success!", f"QR Code saved successfully as {filename}")
+
+    def choose_color(self, var):
+        color_code = colorchooser.askcolor(title="Choose color")[1]
+        if color_code:
+            var.set(color_code)
+
+    def choose_logo(self):
+        path = filedialog.askopenfilename(filetypes=[("Image files", "*.png;*.jpg;*.jpeg")])
+        if path:
+            self.logo_path.set(path)
