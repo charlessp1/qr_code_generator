@@ -5,26 +5,37 @@ import tkinter as tk
 from tkinter import filedialog, colorchooser, messagebox
 
 class GUIQR(QRGenerator):
-    super().__init__()
+    def __init__(self):
+        super().__init__()
 
-    root = tk.Tk()
-    root.title("QR Code Generator")
+        self.root = tk.Tk()
+        self.root.title("QR Code Generator")
 
-    tk.Label(root, text="Enter text or URL:").pack(pady=5)
-    entry = tk.Entry(root, width=40)
-    entry.pack(pady=5)
+        tk.Label(self.root, text="Enter text or URL:").pack(pady=5)
+        self.entry = tk.Entry(self.root, width=40)
+        self.entry.pack(pady=5)
 
-    fill_color = tk.StringVar(value="black")
-    back_color = tk.StringVar(value="white")
-    logo_path = tk.StringVar(value="")
+        self.fill_color = tk.StringVar(value="black")
+        self.back_color = tk.StringVar(value="white")
+        self.logo_path = tk.StringVar(value="")
 
-    tk.Button(root, text="Pick Fill Color", command=lambda: choose_color(fill_color)).pack(pady=2)
-    tk.Button(root, text="Pick Background Color", command=lambda: choose_color(back_color)).pack(pady=2)
-    tk.Button(root, text="Choose Logo (optional)", command=choose_logo).pack(pady=2)
+        tk.Button(self.root, text="Pick Fill Color", command=lambda: self.choose_color(self.fill_color)).pack(pady=2)
+        tk.Button(self.root, text="Pick Background Color", command=lambda: self.choose_color(self.back_color)).pack(pady=2)
+        tk.Button(self.root, text="Choose Logo (optional)", command=self.choose_logo).pack(pady=2)
 
-    tk.Button(root, text="Generate QR Code", command=generate_qr, bg="green", fg="white").pack(pady=10)
+        tk.Button(self.root, text="Generate QR Code", command=self.gui_qr_generator, bg="green", fg="white").pack(pady=10)
 
-    def gui_qr_generator(self, data):
+    def choose_color(self, var):
+        color_code = colorchooser.askcolor(title="Choose color")[1]
+        if color_code:
+            var.set(color_code)
+
+    def choose_logo(self):
+        path = filedialog.askopenfilename(filetypes=[("Image files", "*.png;*.jpg;*.jpeg")])
+        if path:
+            self.logo_path.set(path)
+
+    def gui_qr_generator(self):
         data = self.entry.get()
         if not data:
             messagebox.showerror("Input required!", "Please enter a text or URL.")
@@ -41,7 +52,7 @@ class GUIQR(QRGenerator):
                 qr_w, qr_h = qr_img.size
 
                 logo_size = int(qr_w / 4)
-                logo = logo.resize(logo_size, logo_size)
+                logo = logo.resize((logo_size, logo_size))
                 pos = ((qr_w - logo_size) // 2, (qr_h - logo_size) // 2)
 
                 qr_img.paste(logo, pos, mask=logo if logo.mode=='RGBA' else None)
@@ -54,12 +65,5 @@ class GUIQR(QRGenerator):
             super().save_img(filename, qr_img)
             messagebox.showinfo("Success!", f"QR Code saved successfully as {filename}")
 
-    def choose_color(self, var):
-        color_code = colorchooser.askcolor(title="Choose color")[1]
-        if color_code:
-            var.set(color_code)
-
-    def choose_logo(self):
-        path = filedialog.askopenfilename(filetypes=[("Image files", "*.png;*.jpg;*.jpeg")])
-        if path:
-            self.logo_path.set(path)
+    def run_gui(self):
+        self.root.mainloop()
